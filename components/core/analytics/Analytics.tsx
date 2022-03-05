@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Script from 'next/script'
-import { analytics } from '@/data/site'
+import { analytics } from '~/data/site'
 
 declare global {
   interface Window {

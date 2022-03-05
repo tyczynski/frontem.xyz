@@ -1,5 +1,5 @@
 import Link from './Link'
-import { footer } from '@/data/site'
+import { footer } from '~/data/site'
 
 export default function Footer() {
   return (
