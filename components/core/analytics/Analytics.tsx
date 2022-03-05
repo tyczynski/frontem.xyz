@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Script from 'next/script'
-
 import { analytics } from '@/data/site'
 
-export const PlausibleScript = () => {
+declare global {
+  interface Window {
+    plausible?: (...args: any[]) => void
+  }
+}
+
+const PlausibleScript = () => {
   return (
     <>
       <Script
@@ -19,7 +25,4 @@ export const PlausibleScript = () => {
   )
 }
 
-// https://plausible.io/docs/custom-event-goals
-export const logEvent = (eventName, ...rest) => {
-  return window.plausible?.(eventName, ...rest)
-}
+export const Analytics = () => process.env.NODE_ENV === 'production' && <PlausibleScript />
