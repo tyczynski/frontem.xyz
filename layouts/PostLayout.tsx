@@ -5,17 +5,27 @@ import { BlogSEO } from '@/components/SEO'
 import Image from '@/components/Image'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
-import Comments from '@/components/comments'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import { ReactNode } from 'react'
 import { PostFrontMatter } from 'types/PostFrontMatter'
 import { AuthorFrontMatter } from 'types/AuthorFrontMatter'
 
 const editUrl = (fileName) => `${siteMetadata.siteRepo}/blob/master/data/blog/${fileName}`
-const discussUrl = (slug) =>
-  `https://mobile.twitter.com/search?q=${encodeURIComponent(
+
+const facebookShare = (slug) =>
+  `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
     `${siteMetadata.siteUrl}/blog/${slug}`
   )}`
+
+const twitterShare = (slug) =>
+  `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+    `${siteMetadata.siteUrl}/blog/${slug}`
+  )}`
+
+const linkedinShare = (slug, title) =>
+  `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+    `${siteMetadata.siteUrl}/blog/${slug}`
+  )}&title=${encodeURIComponent(title)}&summary=&source=`
 
 const postDateTemplate: Intl.DateTimeFormatOptions = {
   weekday: 'long',
@@ -66,17 +76,65 @@ export default function PostLayout({ frontMatter, authorDetails, next, prev, chi
             className="pb-8 divide-y divide-gray-200 xl:divide-y-0 dark:divide-gray-700 xl:grid xl:grid-cols-4 xl:gap-x-6"
             style={{ gridTemplateRows: 'auto 1fr' }}
           >
-            <div />
+            <dl className="pt-6 pb-10 xl:border-b xl:border-gray-200 xl:pt-11 xl:dark:border-gray-700">
+              <dt className="sr-only">Authors</dt>
+              <dd>
+                <h2 className="text-xs tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  {authorDetails.length > 1 ? 'Autorzy' : 'Autor'}
+                </h2>
+                <ul className="flex justify-center space-x-8 sm:space-x-12 xl:block xl:space-x-0 xl:space-y-8">
+                  {authorDetails.map((author) => (
+                    <li className="flex items-center space-x-2" key={author.name}>
+                      {author.avatar && (
+                        <Image
+                          src={author.avatar}
+                          width="38px"
+                          height="38px"
+                          alt="avatar"
+                          className="h-10 w-10 rounded-full"
+                        />
+                      )}
+                      <dl className="whitespace-nowrap text-sm font-medium leading-5">
+                        <dt className="sr-only">Name</dt>
+                        <dd className="text-gray-900 dark:text-gray-100">{author.name}</dd>
+                        <dt className="sr-only">Twitter</dt>
+                        <dd>
+                          {author.site && (
+                            <Link
+                              href={author.site}
+                              className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+                            >
+                              @Site
+                            </Link>
+                          )}
+                        </dd>
+                      </dl>
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </dl>
             <div className="divide-y divide-gray-200 dark:divide-gray-700 xl:pb-0 xl:col-span-3 xl:row-span-2">
               <div className="pt-10 pb-8 prose dark:prose-dark max-w-none">{children}</div>
               <div className="pt-6 pb-6 text-sm text-gray-700 dark:text-gray-300">
-                <Link href={discussUrl(slug)} rel="nofollow">
-                  {'Dyskutuj na Twitterze'}
+                Udostępnij na{' '}
+                <Link className="underline" href={facebookShare(slug)} rel="nofollow">
+                  Facebooku
+                </Link>
+                ,{' '}
+                <Link className="underline" href={twitterShare(slug)} rel="nofollow">
+                  Twitterze
+                </Link>{' '}
+                lub{' '}
+                <Link className="underline" href={linkedinShare(slug, title)} rel="nofollow">
+                  LinkedIn
                 </Link>
                 {` • `}
-                <Link href={editUrl(fileName)}>{'Sprawdź na GitHub'}</Link>
+                Sprawdź źródło na{' '}
+                <Link className="underline" href={editUrl(fileName)}>
+                  GitHubie
+                </Link>
               </div>
-              <Comments frontMatter={frontMatter} />
             </div>
             <footer>
               <div className="text-sm font-medium leading-5 divide-gray-200 xl:divide-y dark:divide-gray-700 xl:col-start-1 xl:row-start-2">
@@ -122,7 +180,7 @@ export default function PostLayout({ frontMatter, authorDetails, next, prev, chi
                   href="/blog"
                   className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
                 >
-                  &larr; Powrót do bloga
+                  &larr; Powrót do wszystkich wpisów
                 </Link>
               </div>
             </footer>

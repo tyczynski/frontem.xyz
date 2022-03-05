@@ -7,6 +7,7 @@ email: przemyslaw@tyczynski.pl
 twitter: https://twitter.com/tyta096
 linkedin: https://www.linkedin.com/in/ptyczynski
 github: https://github.com/tyczynski
+site: https://tyczynski.pl
 ---
 
 Piszę front-endy i czasem coś na bloga. Mój kod możesz znaleźć na [GitHubie](https://github.com/tyczynski), a godność na [LinkedIn](https://www.linkedin.com/in/ptyczynski/).
