@@ -127,13 +127,12 @@ export async function getAllFilesFrontMatter(folder: 'blog') {
     const source = fs.readFileSync(file, 'utf8')
     const matterFile = matter(source)
     const frontmatter = matterFile.data as AuthorFrontMatter | PostFrontMatter
-    if ('draft' in frontmatter && frontmatter.draft !== true) {
-      allFrontMatter.push({
-        ...frontmatter,
-        slug: formatSlug(fileName),
-        date: frontmatter.date ? new Date(frontmatter.date).toISOString() : null,
-      })
-    }
+    // @ts-ignore
+    allFrontMatter.push({
+      ...frontmatter,
+      slug: formatSlug(fileName),
+      date: 'date' in frontmatter ? new Date(frontmatter.date).toISOString() : null,
+    })
   })
 
   return allFrontMatter.sort((a, b) => dateSortDesc(a.date, b.date))

@@ -16,16 +16,14 @@ export async function getAllTags(type: 'blog' | 'authors') {
     const source = fs.readFileSync(path.join(root, 'data', type, file), 'utf8')
     const matterFile = matter(source)
     const data = matterFile.data as PostFrontMatter
-    if (data.tags && data.draft !== true) {
-      data.tags.forEach((tag) => {
-        const formattedTag = kebabCase(tag)
-        if (formattedTag in tagCount) {
-          tagCount[formattedTag] += 1
-        } else {
-          tagCount[formattedTag] = 1
-        }
-      })
-    }
+    data.tags.forEach((tag) => {
+      const formattedTag = kebabCase(tag)
+      if (formattedTag in tagCount) {
+        tagCount[formattedTag] += 1
+      } else {
+        tagCount[formattedTag] = 1
+      }
+    })
   })
 
   return tagCount

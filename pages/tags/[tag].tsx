@@ -30,9 +30,7 @@ export const getStaticProps: GetStaticProps<{ posts: PostFrontMatter[]; tag: str
 ) => {
   const tag = context.params.tag as string
   const allPosts = await getAllFilesFrontMatter('blog')
-  const filteredPosts = allPosts.filter(
-    (post) => post.draft !== true && post.tags.map((t) => kebabCase(t)).includes(tag)
-  )
+  const filteredPosts = allPosts.filter((post) => post.tags.map((t) => kebabCase(t)).includes(tag))
 
   // rss
   if (filteredPosts.length > 0) {
