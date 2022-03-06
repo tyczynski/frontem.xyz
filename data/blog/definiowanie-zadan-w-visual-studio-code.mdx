@@ -1,0 +1,96 @@
+---
+title: 'Tasks in Visual Studio Code, czyli automatyzacja w formie konfigurowalnych zadań.'
+date: '2022-03-06'
+tags: ['vscode', 'produktywność']
+draft: false
+summary: 'Zadania czy też Taski, które wbudowane są w edytor Visual Studio Code pozwalają niewielkim nakładem czasu zautomatyzować uruchamianie różnorakich skryptów nie odrywając dłoni od klawiatury.'
+images: ['/static/images/blog/tasks-visual-studio-code/cover.png']
+authors: [przemek]
+---
+
+Visual Studio Code jest bardzo prostym edytorem z niskim progiem wejścia — instalujemy i możemy kodować bez większej konfiguracji. No może z zainstalowanymi kilkoma wtyczkami dedykowanej dla technologii. Jest również obok IDE spod szyldu JetBrains jednym z najpopularniejszych narzędzi dla web developera. Mam jednak wrażenie — co nieco patrząc na siebie — wiele przydatnych funkcjonalności nie jest szeroko znanych dla programistów. _Tasks_, czyli zadania jest jedną z tych funkcjonalności, a pozwala zautomatyzować pracę poprzez wykonywanie zdefiniowanych przez ciebie skryptów.
+
+## Let's task!
+
+Visual Studio Code potrafi wykryć i uzupełnić automatycznie konfigurację z zadaniami o skrypty `npm` oczywiście ile w projekcie będzie skonfigurowany poprawny `package.json`. Oprócz tego wspiera również inne języki i narzędzia im dedykowane, lecz z oczywistych względów skupię się wyłącznie na front-endzie.
+
+Wróćmy do definicji naszego pierwszego zadania. Niech będzie odpowiedzialne za uruchomienie skryptu `npm` z testami jednostkowymi napisanymi w _jest_. Jako że mamy możliwość wygenerowania go automatycznie to uruchamiamy _Command Palette_ (`CMD+Shift+P/CTRL+Shift+P`) i wpisujemy _Tasks: Configure Task_.
+
+![Command Palette z wpisaną wartością Tasks: Configure Task](/static/images/blog/tasks-visual-studio-code/tasks-configure-task.png)
+
+Naszym oczom ujawniła się lista wszystkich wykrytych skryptów `npm` w projekcie. Jako że chce skonfigurować zadanie pod uruchomienie testów jednostkowych, to szukam odpowiadającą mi opcję.
+
+![Lista wykrytych zadań przez Visual Studio Code](/static/images/blog/tasks-visual-studio-code/tasks-configure-task-list.png)
+
+Po wybraniu utworzony zostanie w naszym projekcie plik `tasks.json` w katalogu `.vscode` o następującej strukturze:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "test:unit",
+      "problemMatcher": [],
+      "label": "npm: test:unit",
+      "detail": "jest"
+    }
+  ]
+}
+```
+
+- _type_ → Typ zadania. Może to być jeden ze wspieranych out of the box przez Visual Studio Code jak widoczny `npm` jak i podstawowe `shell` czy `process`.
+- _script_ → jest to pole dedykowane pod typ `npm`. Wskazujemy jaki skrypt chcemy uruchomić.
+- _problemMatcher_ → przyjmuje informacje, w jaki sposób ma przetwarzać _output_ skryptu w celu prawidłowego wyświetlenia błędów czy ostrzeżeń w zakładce _Problems._ Więcej możecie przeczytać [tutaj](https://code.visualstudio.com/docs/editor/tasks#_task-autodetection).
+- _label_ → nazwa zadania, która będzie wyświetlana m.in. w panelu dostępnych zadań w projekcie (do którego przejdziemy za chwilę).
+- _detail_ → jest to dodatkowy opis zadania, który wyświetla się pod nazwą zadania.
+
+Dobrze, mamy zdefiniowane zadanie. To, w jaki sposób można je uruchomić? Pierwszym sposobem jest otworzenie panelu Go to file (`CMD+P/CTRL+P`) i wpisanie "task " (na końcu jest spacja).
+
+![Zdefiniowane zadanie wyświetlone na liście zadań](/static/images/blog/tasks-visual-studio-code/task-go-to-file.png)
+
+Jak widać mamy nasze zadanie. Wyświetla się przed chwilą wspomniany _label_ (npm: test:unit) jak i _detail_ (jest). Uruchommy go.
+
+![Uruchomienie zadania z testami jednostkowymi](/static/images/blog/tasks-visual-studio-code/running-task-jest.gif)
+
+Działa, świetnie! Teraz dosłownie nie odrywając rąk od klawiatury, jesteśmy w stanie uruchomić w ekspresowym tempie testy jednostkowe. Jednak nie jestem tym do końca usatysfakcjonowany. Potrzebowałbym dodatkowe zadanie, które uruchomi mi wyłącznie testy dla pliku, w którym obecnie się znajduję. W tym celu skopiuje istniejące zadanie i trochę je zmodyfikuję.
+
+```json
+{
+  "type": "shell",
+  "command": "npm run test:unit -- --runTestsByPath ${fileDirname}/${fileBasenameNoExtension}.*${fileExtname}",
+  "group": "test",
+  "label": "Run unit tests for current file",
+  "detail": "npm run test:unit -- --runTestsByPath"
+}
+```
+
+Zmieniłem typ na `shell`, mówiąc, że zadanie ma wykonać polecenie w bashu (lub innej powłoce, jaką masz skonfigurowaną w systemie). Pod `command` kryje się to polecenie, jakie zdefiniujemy. Dodatkowo skorzystałem z pomocy wbudowanych zmiennych, które pozwolą skonstruować dynamicznie ścieżkę, która będzie wskazywać na aktywny plik testowy czy plik z logiką biznesową. Dzięki temu zadanie będzie elastyczne, ponieważ zadanie poprawnie będzie działać gdy będziemy znajdować się w pliku z kodem (`foo.js`) jak i w samych plikach testowych (`foo.spec.js` czy `foo.test.js`). Oczywiście przyjmując konwencję, że testy są na tym samym poziomie co kod, ponieważ w taki sposób skonfigurowałem komendę. Krótkie wyjaśnienie co kryje się pod tymi zmiennymi:
+
+- `fileDirname` — absolutna ścieżka do pliku
+- `fileBasenameNoExtension` — nazwa pliku bez rozszerzenia
+- `fileExtname` — rozszerzenie pliku
+
+Po listę wszystkich zmiennych odsyłam do [dokumentacji](https://code.visualstudio.com/docs/editor/variables-reference#:~:text=Currently%20VS%20Code%20supports%20three%20types%20of%20input,several%20options.%203%20command%3A%20Runs%20an%20arbitrary%20command.). Zobaczmy zadanie w akcji:
+
+![Uruchomienie zadania z testami jednostkowymi dla aktywnego pliku](/static/images/blog/tasks-visual-studio-code/running-task-jest-for-file.gif)
+
+Działa wyśmienicie więc praca z testami będzie zdecydowanie wydajniejsza. Chociaż wydaje mi się, że możemy zrobić jeszcze jedną rzecz. Wszyscy kochamy skróty klawiaturowe, więc przypiszmy jeden do tego zadania. W tym celu należy zaktualizować `keybindings.json` o następującą formułkę:
+
+```json
+{
+  "key": "ctrl+shift+t",
+  "command": "workbench.action.tasks.runTask",
+  "args": "Run unit tests for current file"
+}
+```
+
+- `key` — skrót klawiaturowy
+- `command` — wskazujemy, że skrót ma odpalić zadanie...
+- `args` — ...o danej nazwie, czyli zgodnie ze zdefiniowanym polem _label_
+
+Voilà! Mamy wszystko, co chcieliśmy osiągnąć. Stworzyliśmy zadanie, które uruchomi test jednostkowy dla pliku, w którym obecnie się znajdujemy i do tego przypisaliśmy do niego skrót klawiaturowy. Lepiej być nie mogło. Produktywność wskoczyła o kilka poziomów w górę!
+
+## Pisać zadania każdy może...
+
+Przykład przedstawiony w artykule może nie był wybitny i skomplikowany, ale dotknął kilku podstawowych funkcjonalności, jakie składają się na zadania w Visual Studio Code. Również poruszyłem wyłącznie 5% możliwości i funkcjonalności, jakie kryją się pod tym potężnym systemem. Zachęcam was gorąco do eksperymentowania jak i zapoznania się z oficjalną [dokumentacją](https://code.visualstudio.com/Docs/editor/tasks), żeby móc stworzyć automatyzacje dopasowane do waszych potrzeb.
